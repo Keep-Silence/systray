@@ -22,6 +22,8 @@ var (
 
 	currentID = uint32(0)
 	quitOnce  sync.Once
+
+	ClickedCh = make(chan struct{})
 )
 
 func init() {

@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package systray
@@ -277,8 +278,10 @@ func (t *winTray) wndProc(hWnd windows.Handle, message uint32, wParam, lParam ui
 		systrayExit()
 	case t.wmSystrayMessage:
 		switch lParam {
-		case WM_RBUTTONUP, WM_LBUTTONUP:
+		case WM_RBUTTONUP:
 			t.showMenu()
+		case WM_LBUTTONUP:
+			t.clickCh()
 		}
 	case t.wmTaskbarCreated: // on explorer.exe restarts
 		t.muNID.Lock()
@@ -762,6 +765,14 @@ func (t *winTray) iconToBitmap(hIcon windows.Handle) (windows.Handle, error) {
 		return 0, err
 	}
 	return windows.Handle(hMemBmp), nil
+}
+
+func (t *winTray) clickCh() {
+	select {
+	case ClickedCh <- struct{}{}:
+	// in case no one waiting for the channel
+	default:
+	}
 }
 
 func registerSystray() {
